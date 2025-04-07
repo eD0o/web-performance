@@ -70,3 +70,39 @@ Each of these is critical depending on your website's focus—but `at least one 
 | Skill.co Example   | +1 sec = **-0.4% conversion rate drop** |
 
 > Performance isn't just technical — it has real revenue impact.
+
+## 1.2 - Measuring
+
+Without measurement, performance efforts are blind guesses, and `it goes beyond just load time and reflect real user experience`.
+
+### 1.2.1 - From Legacy to Modern Metrics
+
+| Metric Type         | Description                                                                               |
+| ------------------- | ----------------------------------------------------------------------------------------- |
+| **Legacy**          | Traditional metrics like `"Load Time" or "DOMContentLoaded" — simple but limited.`        |
+| **Core Web Vitals** | Google's standardized UX-focused metrics: `LCP, FID, CLS`. Crucial for SEO & performance. |
+| **Other Metrics**   | Include `TTFB (Time to First Byte), TTI (Time to Interactive)`, etc. Still useful today.  |
+
+### 1.2.2 - Waterfall Charts
+
+Waterfall charts visualize how each resource is loaded in the browser, it's `useful for identifying bottlenecks, delays, or blocking assets`.
+
+### 1.2.3 - Anatomy of a Waterfall Row (Example)
+
+A simple chart:
+![](https://i.imgur.com/O0SMbWg.png)
+
+Now, a more detailed one:
+
+![](https://i.imgur.com/CoxAaOu.png)
+
+Horizontal axis = Time; Vertical = Requests.
+
+| Resource Type | Color  |
+| ------------- | ------ |
+| HTML          | Blue   |
+| CSS           | Purple |
+| JavaScript    | Yellow |
+| Images        | Green  |
+| Fonts         | Teal   |
+| Other         | Gray   |
