@@ -106,3 +106,67 @@ Horizontal axis = Time; Vertical = Requests.
 | Images        | Green  |
 | Fonts         | Teal   |
 | Other         | Gray   |
+
+## 1.3 - Legacy Metrics
+
+### 1.3.1 - DOMContentLoaded
+
+The HTML has been completely loaded and parsed, and all deferred scripts have executed. At this point, the DOM is fully built, so every element is addressable via JavaScript.
+
+- Resources like images, stylesheets, and other media may still be loading.
+- No guarantee that external CSS or images are done.
+
+```diff
+- structure of the page is done
++ DOM structure is complete
+```
+
+![](https://i.imgur.com/RZxvcov.png)
+
+![](https://i.imgur.com/oniwvdJ.png)
+
+### 1.3.2 - Load
+
+The load event fires when the entire page, including all dependent resources (images, stylesheets, scripts), has been downloaded.
+
+- This includes non-deferred scripts, images, fonts, etc.
+- Resources loaded via lazy-loading or dynamically after load (e.g. via JS) are not included.
+
+```diff
+- all except those that are lazy-loaded
++ all statically referenced resources (excluding dynamically loaded ones)
+```
+
+![](https://i.imgur.com/4rDacmx.png)
+
+![](https://i.imgur.com/nUUJqhv.png)
+
+### 1.3.3 - Problems
+
+#### 1. They don’t reflect the user’s experience
+
+- DOMContentLoaded fires when the HTML is parsed — but before styles, images, and fonts load, so the screen might still be blank or broken.
+- Load waits for all static resources — but that includes invisible or unimportant things (e.g. analytics scripts), which delays the signal even if the page looks ready.
+
+> `Users care about when they can see or interact with content` — not when the last image finishes loading.
+
+#### 2. They ignore async or lazy-loaded content
+
+- Modern pages often load things after load via JS (e.g. SPAs, infinite scroll, modules via dynamic import).
+- So the load event might fire way too early, or way too late — and miss the real user experience.
+
+#### 3. They don’t measure what loaded — only when
+
+- Neither DOMContentLoaded nor Load tell you which elements were visible, how long they took to appear, or how usable the page felt.
+- There's no correlation with what the user actually sees (e.g. "Was the hero image visible?" "Was the button clickable?").
+
+#### 4. They’re inconsistent across frameworks and setups
+
+- In apps using React, Vue, or Angular, `most of the page is rendered after the DOM is loaded`.
+- So `DOMContentLoaded means very little — it just tells you the initial shell` is there.
+
+#### Summary: Why we moved on
+
+> Legacy metrics are browser-centered, not user-centered.
+
+That’s why `modern metrics` like First Contentful Paint (FCP), Largest Contentful Paint (LCP), and Interaction to Next Paint (INP) are preferred — they `measure what the user sees and feels, not just what the browser is doing`.
