@@ -63,13 +63,13 @@ Preload key assets with <link rel="preload">
 
 ---
 
-## 2.1.1 - Entropy
+### 2.1.1 - Entropy
 
 Entropy helps Google detect whether an image is `"visually meaningful"` enough to count for LCP.
 
 `Bits per visible pixel`
 
-### High Entropy (Valid LCP)
+#### High Entropy (Valid LCP)
 
 - Original: 3.9 MB → 31 million bits
 - Rendered at 2800x1200 → 3.3 million pixels
@@ -78,7 +78,7 @@ Entropy helps Google detect whether an image is `"visually meaningful"` enough t
 
 ![](https://i.imgur.com/AIZIoWf.png)
 
-### Low Entropy (Ignored by LCP)
+#### Low Entropy (Ignored by LCP)
 
 - Placeholder image: 17 bytes
 - Rendered at 200x88
@@ -89,7 +89,7 @@ Entropy helps Google detect whether an image is `"visually meaningful"` enough t
 
 > Even if it makes UX feel faster, Google ignores it for LCP.
 
-### 🖼️ Lazy-loaded Images and LCP
+#### 🖼️ Lazy-loaded Images and LCP
 
 Do lazy-loaded images count for LCP?  
 ✅ Yes — but only once they’ve fully loaded.
@@ -156,3 +156,125 @@ console.table(
 2.5s is not arbitrary – based on behavioral studies: users feel interrupted after 2s
 
 `LCP > 2.5s leads to ranking penalties`, though the exact formula is proprietary.
+
+Claro! Aqui está a versão equivalente das suas anotações, mas agora focada em **CLS: Cumulative Layout Shift**:
+
+---
+
+## 2.2 - CLS: Cumulative Layout Shift
+
+CLS measures `how much the visible content moves around unexpectedly` as the page loads.
+
+> 💥 It quantifies visual _instability_ — those annoying jumps that happen when things load out of order.
+
+### What causes layout shifts?
+
+⛔ Unexpected layout changes caused by:
+
+- Images without width/height
+- Fonts loading late (FOUT/FOIT)
+- Ads or embeds loading dynamically
+- DOM injected late (e.g., banners, popups)
+- Lazy-loaded content above existing content
+
+✅ Expected shifts (user-initiated) don’t count:
+
+- Click-triggered modal
+- Expanding accordion on tap
+
+### ⚙️ How is CLS Calculated?
+
+Each layout shift has a score:
+
+```text
+CLS = impact fraction × distance fraction
+```
+
+- **Impact fraction** = % of the viewport affected
+- **Distance fraction** = how far elements moved
+
+CLS is the **sum of all shift scores** within a session window (up to 5s long, max 1s gap).
+
+---
+
+### 🛑 Examples of CLS
+
+| Before Load                               | After Load                                |
+| ----------------------------------------- | ----------------------------------------- |
+| ![](https://i.imgur.com/7HZpGpT.png)      | ![](https://i.imgur.com/pP9THKM.png)      |
+| 🟥 Text shifts due to late-loading banner | 🟥 CLS spike — layout jumped unexpectedly |
+
+---
+
+### 🎯 Best Practices to Avoid CLS
+
+- ✅ Always define `width` and `height` for images and videos
+- ✅ Use aspect-ratio boxes for media
+- ✅ Preload fonts with `rel="preload"` to avoid FOUT/FOIT
+- ✅ Reserve space for ads and embeds
+- ✅ Avoid inserting DOM above existing content
+
+> Tip: Don’t animate layout properties like `top` or `height` — use `transform: translate()` for smoother motion.
+
+---
+
+### 🧪 CLS in SPAs
+
+- CLS can occur late — not just at initial load
+- SPAs often inject dynamic content after route changes
+- Use `layout stability techniques` consistently across routes
+
+---
+
+### 📊 How to Measure CLS
+
+You can track CLS using the Performance API:
+
+```js
+new PerformanceObserver((list) => {
+  for (const entry of list.getEntries()) {
+    if (!entry.hadRecentInput) {
+      console.log("Shift score:", entry.value, "Element:", entry.target);
+    }
+  }
+}).observe({ type: "layout-shift", buffered: true });
+```
+
+Or: 
+
+```js
+import { getCLS } from "web-vitals";
+
+getCLS((metric) => {
+  console.log(metric);
+});
+```
+
+Or use tools like:
+
+- Lighthouse
+- Web Vitals Chrome Extension
+- PageSpeed Insights
+
+---
+
+### ✅ Good CLS Thresholds
+
+| Score      | CLS Value  |
+| ---------- | ---------- |
+| Good       | ≤ 0.1      |
+| Needs Work | 0.1 – 0.25 |
+| Poor       | > 0.25     |
+
+> CLS penalties increase if core content shifts more than 10% of the screen, especially if it happens late in the page lifecycle.
+
+---
+
+### 🧱 Common Fixes
+
+| Problem                               | Solution                                       |
+| ------------------------------------- | ---------------------------------------------- |
+| No `width/height` on images           | ✅ Add dimensions or aspect-ratio              |
+| Flash of invisible text (FOIT)        | ✅ Preload fonts, use font-display: swap       |
+| Ads resizing after load               | ✅ Reserve fixed space, avoid collapsing gaps  |
+| Injected banners/promo at top of page | ✅ Push them below fold or reserve space early |
