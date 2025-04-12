@@ -328,23 +328,24 @@ The main thread is a shared resource — all of this happens in one thread:
 Another Example:
 
 ```html
-<body>
-  <script>
-    window.addEventListener("load", () => {
-      const div = document.createElement("div");
-      document.body.appendChild(div);
-    });
-  </script>
-</body>
+<html>
+  <body>
+    <script>
+      window.addEventListener("load", () => {
+        var el = document.createElement("div");
+        el.innerHTML = "<h1>Hey</h1>";
+        document.body.appendChild(el);
+      });
+    </script>
+  </body>
+</html>
 ```
 
 1. HTML parsed → triggers a top-level task (gray)
-2. Finds script → compiles (dark yellow)
-3. addEventListener is noted → function is not yet parsed
-4. On load, a new task is triggered
-5. Function is compiled → executed (light yellow)
-6. appendChild causes layout/paint (pink)
-
-Each of these steps appears as blocks stacked and colored in the flame chart.
+2. Script found → compiled and executed (dark yellow)
+3. addEventListener("load") is registered → function is not yet executed
+4. On load, a new task is triggered (gray)
+5. Function is executed: creates element, sets innerHTML, appends (light yellow)
+6. appendChild triggers layout and paint → possible CLS (pink)
 
 ---
