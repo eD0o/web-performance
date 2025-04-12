@@ -23,14 +23,14 @@ It stops measuring once the user interacts with the page.
 
 But... who decides what's the most important content?
 
-> ❌ It's not up to you. You can’t just mark a tiny <div> at the top as "important" to cheat LCP. `Google analyzes the page visually`.
+> ❌ It's not up to you. You can’t just mark a tiny div at the top as "important" to cheat LCP. `Google analyzes the page visually`.
 
 ### What counts for LCP?
 
 ✅ Can be:
 
-- <img>
-- <video>
+- img
+- video
 - CSS background-image
 - Block-level text elements
 
@@ -59,7 +59,7 @@ Lazy-load below-the-fold assets
 
 Avoid overly large banners unless intentionally the LCP
 
-Preload key assets with <link rel="preload">
+Preload key assets with `<link rel="preload">`
 
 ---
 
@@ -192,7 +192,7 @@ This value is calculated for each unexpected shift, and `all values are summed u
 ### ✅ What Doesn’t Count?
 
 - Elements that don’t move during load (e.g., fixed/stable headers).
-- Content inside a <canvas> — CLS only considers the element’s bounding box.
+- Content inside a canvas — CLS only considers the element’s bounding box.
 - Shifts outside the viewport, unless they eventually move content into view.
 - Properly reserved space via CSS or HTML (width, height, aspect-ratio).
 
@@ -339,7 +339,7 @@ Another Example:
 ```
 
 1. HTML parsed → triggers a top-level task (gray)
-2. Finds <script> → compiles (dark yellow)
+2. Finds script → compiles (dark yellow)
 3. addEventListener is noted → function is not yet parsed
 4. On load, a new task is triggered
 5. Function is compiled → executed (light yellow)
