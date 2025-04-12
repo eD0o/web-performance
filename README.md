@@ -157,124 +157,194 @@ console.table(
 
 `LCP > 2.5s leads to ranking penalties`, though the exact formula is proprietary.
 
-Claro! Aqui está a versão equivalente das suas anotações, mas agora focada em **CLS: Cumulative Layout Shift**:
-
 ---
 
 ## 2.2 - CLS: Cumulative Layout Shift
 
-CLS measures `how much the visible content moves around unexpectedly` as the page loads.
-
-> 💥 It quantifies visual _instability_ — those annoying jumps that happen when things load out of order.
-
-### What causes layout shifts?
-
-⛔ Unexpected layout changes caused by:
-
-- Images without width/height
-- Fonts loading late (FOUT/FOIT)
-- Ads or embeds loading dynamically
-- DOM injected late (e.g., banners, popups)
-- Lazy-loaded content above existing content
-
-✅ Expected shifts (user-initiated) don’t count:
-
-- Click-triggered modal
-- Expanding accordion on tap
-
-### ⚙️ How is CLS Calculated?
-
-Each layout shift has a score:
-
-```text
-CLS = impact fraction × distance fraction
-```
-
-- **Impact fraction** = % of the viewport affected
-- **Distance fraction** = how far elements moved
-
-CLS is the **sum of all shift scores** within a session window (up to 5s long, max 1s gap).
+CLS (Cumulative Layout Shift) `measures visual stability, capturing how often and how drastically elements move unexpectedly` on screen. It `focuses on the user’s viewport` and is a key Core Web Vital.
 
 ---
 
-### 🛑 Examples of CLS
+### 📦 What Causes Layout Shifts?
 
-| Before Load                               | After Load                                |
-| ----------------------------------------- | ----------------------------------------- |
-| ![](https://i.imgur.com/7HZpGpT.png)      | ![](https://i.imgur.com/pP9THKM.png)      |
-| 🟥 Text shifts due to late-loading banner | 🟥 CLS spike — layout jumped unexpectedly |
+- New elements (like promo banners) pushing content down.
+- Images, fonts, or iframes `loading after the initial paint`, shifting elements.
+- Users interacting (scrolling, clicking) while the layout is still being adjusted.
 
----
+> `Only shifts that occur in the user’s viewport count`. If the element was visible and moved, it contributes to CLS.
 
-### 🎯 Best Practices to Avoid CLS
+It's possible to see it happening here: https://shifty.site/
 
-- ✅ Always define `width` and `height` for images and videos
-- ✅ Use aspect-ratio boxes for media
-- ✅ Preload fonts with `rel="preload"` to avoid FOUT/FOIT
-- ✅ Reserve space for ads and embeds
-- ✅ Avoid inserting DOM above existing content
+### How to Calculate Layout Shift
 
-> Tip: Don’t animate layout properties like `top` or `height` — use `transform: translate()` for smoother motion.
+Layout Shift is measured by multiplying two factors:
 
----
+**Impact Fraction × Distance Fraction = Layout Shift Value**
 
-### 🧪 CLS in SPAs
+This value is calculated for each unexpected shift, and `all values are summed up to get the final score` for Cumulative Layout Shift (CLS).
 
-- CLS can occur late — not just at initial load
-- SPAs often inject dynamic content after route changes
-- Use `layout stability techniques` consistently across routes
+![](https://i.imgur.com/ZxhwJ4C.png)
+
+> ⚠️ Shifts caused by user interactions and those that happen within 500ms of input are excluded from CLS.
 
 ---
 
-### 📊 How to Measure CLS
+### ✅ What Doesn’t Count?
 
-You can track CLS using the Performance API:
+- Elements that don’t move during load (e.g., fixed/stable headers).
+- Content inside a <canvas> — CLS only considers the element’s bounding box.
+- Shifts outside the viewport, unless they eventually move content into view.
+- Properly reserved space via CSS or HTML (width, height, aspect-ratio).
+
+> A layout shift is measured only when something visually moves unexpectedly.
+
+---
+
+### 🔁 CLS Is Not a Fixed Score
+
+CLS is `not deterministic — users experience different layout behaviors` due to:
+
+- Device and screen size
+- Network conditions
+- Scroll timing and interaction
+
+> Google aggregates thousands of layout shift instances and `reports the 75th percentile CLS across real-user data`.
+
+---
+
+### 🎯 CLS in Action
+
+| 🧪 Example Scenario                                       | Does it count toward CLS? |
+| --------------------------------------------------------- | ------------------------- |
+| Header stays in place during load                         | ❌ No                     |
+| Promo banner pushes content down                          | ✅ Yes                    |
+| Image with unknown size loads in later                    | ✅ Yes                    |
+| Skeleton placeholder is swapped with content of same size | ❌ No                     |
+| Canvas content moves inside but canvas size is static     | ❌ No                     |
+| User scrolls while layout is still adjusting              | ✅ Yes                    |
+
+---
+
+### 🧱 Best Practices to Prevent CLS
+
+| 🛠️ Technique                              | Prevents CLS? |
+| ----------------------------------------- | ------------- |
+| Set image width and height attrs          | ✅ Yes        |
+| Use CSS aspect-ratio for elements         | ✅ Yes        |
+| Lazy-load images with dimensions          | ✅ Yes        |
+| Use skeleton loaders or placeholders      | ✅ Yes        |
+| Load fonts with font-display: optional    | ✅ Yes        |
+| Animate size/position without reservation | ❌ No         |
+
+---
+
+### 📱 Responsiveness and CLS
+
+Responsive design `can unintentionally trigger layout shifts`, especially when:
+
+- Styles adapt via media queries without reserving layout space
+- Elements reposition or resize due to viewport changes (e.g., mobile breakpoints)
+- Components re-render differently at different screen sizes without layout stabilization
+
+> 💡 Pro tip: `Always test CLS on multiple screen sizes and devices to ensure responsive layouts are stable`.
+
+Strategies to handle responsivity without shifting:
+
+- Use `min-height and aspect-ratio to reserve layout slots` before media queries take effect.
+- Avoid injecting layout-altering DOM changes based on screen width after the initial render.
+- `Avoid flex/grid reflows by using visibility or opacity` to toggle UI instead of inserting/removing DOM nodes.
+
+---
+
+### 🧠 Summary
+
+- CLS is about visual stability — what moves, when, and where.
+- It’s user-centric: only what’s visible and changes matters.
+- CLS is measured across real sessions, not just a single run.
+- You can’t just fix it “once” — it requires layout planning across different viewports, content types, and loading scenarios.
+
+---
+
+## 2.3 - Flame Chart: Visualizing Browser Tasks
+
+A flame chart `is a time-based visualization of how the browser’s main thread executes tasks`. It’s commonly used in Chrome DevTools (Performance tab) and `shows a stacked timeline of browser activities` in milliseconds or microseconds.
+
+---
+
+### 📊 How It Works
+
+Each horizontal bar in a flame chart represents a task or function execution:
+
+- Bars are stacked to show parent/child relationships.
+- The width of each bar shows how long that task took.
+- The vertical stack shows call depth: a function calling another function, which calls another, and so on.
 
 ```js
-new PerformanceObserver((list) => {
-  for (const entry of list.getEntries()) {
-    if (!entry.hadRecentInput) {
-      console.log("Shift score:", entry.value, "Element:", entry.target);
-    }
-  }
-}).observe({ type: "layout-shift", buffered: true });
+function task1() {
+  task2();
+}
+
+function task2() {
+  task3();
+}
+
+function task3() {
+  // Do something expensive
+}
 ```
 
-Or: 
+This call stack would appear as:
 
-```js
-import { getCLS } from "web-vitals";
-
-getCLS((metric) => {
-  console.log(metric);
-});
-```
-
-Or use tools like:
-
-- Lighthouse
-- Web Vitals Chrome Extension
-- PageSpeed Insights
+![](https://i.imgur.com/5DYPq5m.png)
 
 ---
 
-### ✅ Good CLS Thresholds
+### 🎨 Color Coding in Flame Charts (Chrome)
 
-| Score      | CLS Value  |
-| ---------- | ---------- |
-| Good       | ≤ 0.1      |
-| Needs Work | 0.1 – 0.25 |
-| Poor       | > 0.25     |
-
-> CLS penalties increase if core content shifts more than 10% of the screen, especially if it happens late in the page lifecycle.
+| Color        | Meaning                                      |
+| ------------ | -------------------------------------------- |
+| Gray         | Top-level browser task                       |
+| Blue         | Parsing HTML                                 |
+| Pink         | Layout and paint                             |
+| Dark yellow  | JavaScript setup (evaluate, compile, events) |
+| Light yellow | Active JavaScript execution                  |
+| Green        | Extensions (usually not relevant)            |
 
 ---
 
-### 🧱 Common Fixes
+### 🧠 Why Flame Charts Matter
 
-| Problem                               | Solution                                       |
-| ------------------------------------- | ---------------------------------------------- |
-| No `width/height` on images           | ✅ Add dimensions or aspect-ratio              |
-| Flash of invisible text (FOIT)        | ✅ Preload fonts, use font-display: swap       |
-| Ads resizing after load               | ✅ Reserve fixed space, avoid collapsing gaps  |
-| Injected banners/promo at top of page | ✅ Push them below fold or reserve space early |
+The main thread is a shared resource — all of this happens in one thread:
+
+- JavaScript execution
+- Layout and rendering
+- Handling user interactions
+- Painting the screen
+
+> 💡 If your JavaScript takes too long, it can block layout, user input, or rendering. Flame charts help you find what’s taking too long and where the bottlenecks are.
+
+---
+
+Another Example:
+
+```html
+<body>
+  <script>
+    window.addEventListener("load", () => {
+      const div = document.createElement("div");
+      document.body.appendChild(div);
+    });
+  </script>
+</body>
+```
+
+1. HTML parsed → triggers a top-level task (gray)
+2. Finds <script> → compiles (dark yellow)
+3. addEventListener is noted → function is not yet parsed
+4. On load, a new task is triggered
+5. Function is compiled → executed (light yellow)
+6. appendChild causes layout/paint (pink)
+
+Each of these steps appears as blocks stacked and colored in the flame chart.
+
+---
