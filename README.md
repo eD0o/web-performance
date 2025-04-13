@@ -349,3 +349,68 @@ Another Example:
 6. appendChild triggers layout and paint → possible CLS (pink)
 
 ---
+
+## 2.5 - Time to First Byte (TTFB)
+
+TTFB is the time from when the browser sends a request to the server, until it receives the first byte of the response. `How quickly your host responds`.
+
+It's `not a CWV, but still an important metric for server-side performance`. Often used in web performance audits.
+
+![](https://i.imgur.com/gmFF8V4.png)
+
+![](https://i.imgur.com/iXEHR4N.png)
+
+### What affects TTFB?
+
+- Server response time
+- Network latency
+- DNS resolution
+- CDN caching
+
+TTFB `is a backend performance metric`, and one of the first indicators of how fast your server begins to respond. 
+
+> ⏱ A good TTFB is under 800ms, but for optimal LCP performance, aim for under 200ms if possible.
+
+`TTFB affects your LCP. If your TTFB is bad, even with optimized images and CSS, your LCP can never be faster than that initial wait.`
+
+That’s why reducing TTFB (via CDN, server optimization, or caching) is often one of the first steps in improving LCP.
+
+---
+
+## 2.6 - Legacy Metrics
+
+### 2.6.1 - First Input Delay (FID) [Legacy CWV]
+
+FID measures the time between the user's first interaction with the page (like clicking a link or tapping a button) and the `time the browser is actually able to respond to that interaction`.
+
+> ✅ It reflects the responsiveness of your site during page load.
+
+#### Why FID matters?
+
+- `A long delay means the main thread is blocked` (often by heavy JavaScript), so the browser can’t respond quickly.
+- A good FID is less than 100ms.
+
+> 🔁 `Replaced by INP` (Interaction to Next Paint) as a Core Web Vital in March 2024. Still useful to understand input responsiveness, but not used for CWV scoring anymore.
+
+---
+
+### 2.6.2 - First Contentful Paint (FCP) [Legacy CWV]
+
+FCP `measures how long it takes from the moment the page starts loading to when any part of the content is rendered` (text, image, SVG).
+
+Still measured, but not one of the main 3 Core Web Vitals anymore (those are now LCP, INP, CLS). FCP is `often used to complement LCP insights`.
+
+![](https://i.imgur.com/qeAsv1T.png)
+
+#### What’s considered “content”?
+
+- Text
+- Images (including background)
+- SVGs
+- Canvas
+
+> 🧩 It’s the moment `something meaningful appears on screen`, but not necessarily what the user is waiting for.
+
+- A good FCP is under 1.8 seconds.
+
+`FCP helps you understand how quickly users perceive that the page is loading.`
