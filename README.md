@@ -350,6 +350,39 @@ Another Example:
 
 ---
 
+## 2.4 - INP: Interaction to Next Paint
+
+How quickly users can interact.
+
+### What’s an interaction?
+
+- Click
+- Drag
+- Touch
+- Keypress
+
+> Exception: Scroll.
+
+`Every time the user interacts`, it generates an INP. `The worst interaction time will be the score`, and the worst time cannot be determined until the interaction has completed. `If no interaction occurs, there's no INP score`.
+
+![](https://i.imgur.com/2EHt4TC.png)
+
+INP `measures the latency between the user’s interaction and the time the browser can visually respond`. A high INP means the user may experience delays in seeing feedback or action on their input, leading to a poor perception of site performance.
+
+INP is `heavily influenced by device capabilities`, meaning slower or lower-powered devices might experience higher latency.
+
+> A good INP score is under 200ms.
+
+### Why INP matters?
+
+- User experience: A `high INP can make your site feel sluggish`. Fast interactions result in better user engagement and satisfaction.
+- Mobile impact: Since mobile devices often have limited processing power, a good `INP score becomes more crucial for mobile performance`.
+
+### How to track INP?
+
+- Chrome DevTools: View INP metrics using the Web Vitals panel.
+- Web Vitals Extension: Use it for easy monitoring of INP on your page.
+
 ## 2.5 - Time to First Byte (TTFB)
 
 TTFB is the time from when the browser sends a request to the server, until it receives the first byte of the response. `How quickly your host responds`.
@@ -367,7 +400,7 @@ It's `not a CWV, but still an important metric for server-side performance`. Oft
 - DNS resolution
 - CDN caching
 
-TTFB `is a backend performance metric`, and one of the first indicators of how fast your server begins to respond. 
+TTFB `is a backend performance metric`, and one of the first indicators of how fast your server begins to respond.
 
 > ⏱ A good TTFB is under 800ms, but for optimal LCP performance, aim for under 200ms if possible.
 
