@@ -86,3 +86,99 @@ performance.measure("task-duration", "start-heavy-task", "end-heavy-task");
 You can then access it via `getEntriesByType('measure')`.
 
 ---
+
+Absolutely! Here's a clearer and more structured version of your notes, following your same tone and format style:
+
+---
+
+## 3.2 - PerformanceObserver API
+
+The PerformanceObserver `lets us passively collect performance metrics when the browser is idle`, without blocking or interfering with the main thread.
+
+This is especially `useful when logging performance during runtime—so you don’t slow things down by measuring them`.
+
+> 🧠 Ideal for tracking metrics like Core Web Vitals, long tasks, layout shifts, etc.
+
+### Example: Observing Layout Shifts (CLS)
+
+```js
+const performanceObserver = new PerformanceObserver((list) => {
+  list.getEntries().forEach((entry) => {
+    console.log(`Layout shifted by ${entry.value}`);
+  });
+});
+
+performanceObserver.observe({
+  type: "layout-shift",
+  buffered: true,
+});
+
+// type: "layout-shift" → we're observing shifts that impact Cumulative Layout Shift (CLS).
+
+// buffered: true → ensures we also catch entries that happened before the observer was initialized.
+
+// buffered: false (default): only observes new entries from this point forward.
+```
+
+### Other Observable Entry Types:
+
+- "layout-shift" (CLS)
+- "largest-contentful-paint" (LCP)
+- "first-input" or "event" (INP)
+- "resource" (images, scripts, CSS, etc.)
+- "navigation" (full page loads)
+
+### 🔍 Filtering by entry.entryType
+
+Each PerformanceEntry has a entryType (like "resource", "layout-shift", etc). If you're observing multiple types or using getEntries(), you can filter like this:
+
+```js
+list.getEntries().forEach((entry) => {
+  if (entry.entryType === "layout-shift") {
+    console.log(`CLS shift: ${entry.value}`);
+  }
+});
+```
+
+Helpful when multiple entry types are observed and you want fine-grained control over handling them.
+
+### 🧹 Managing Observers & Filtering
+
+```js
+performanceObserver.disconnect();
+// ✅ Prevents memory leaks and keeps your app efficient — especially important in SPAs or long-lived sessions.
+```
+
+After you're done observing, always call disconnect() to stop the observer and free up memory.
+
+Use it when:
+
+- You're done collecting metrics
+- The page/component unmounts
+- You only need a one-time measurement
+
+### Easy Core Web Vitals Tracking
+
+You can also track Core Web Vitals with the [web-vitals](https://www.npmjs.com/package/web-vitals) library:
+
+```js
+import { onLCP, onCLS, onINP } from "web-vitals";
+
+onLCP(console.log);
+onCLS(console.log);
+onINP(console.log);
+```
+
+This wraps PerformanceObserver under the hood and gives you simple callbacks for each metric.
+
+---
+
+## 3.3 - Browser Support
+
+![](https://i.imgur.com/sLyUUWc.png)
+
+![](https://i.imgur.com/BUmqbIp.png)
+
+> 🧨 Safari still lacks full support for many Web Vitals APIs, which limits cross-browser consistency.
+
+---
