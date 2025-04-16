@@ -1,184 +1,128 @@
-# 3 - Performance
+# 4 - Testing and Tools
 
-Web performance measurement in JavaScript primarily relies on two browser APIs:
+## 4.1 - Testing Performance
 
-- Performance API
-- PerformanceObserver API
-
-These APIs provide granular `insights into timing, resource usage, and user interactions`.
+When testing performance, `how and where we collect data drastically affects the results`. There are three main approaches:
 
 ---
 
-## 3.1 - Performance API
+### 🧪 4.1.1 - Lab Data
 
-The Performance API `gives access to high-resolution timestamps and performance metrics` for a web page.
+- Performance `tests run in a controlled environment`.
+- Usually executed close to the host server (e.g., local dev server).
+- Results are `consistent but not reflective of real user conditions`.
+- Example: Running Lighthouse locally.
 
-### 🔹 performance.now()
+> ⚠️ Good for debugging and regressions, but not representative of actual user experience.
 
-`Returns a high-resolution timestamp` (in milliseconds) relative to performance.timeOrigin.
+### 🛠️ Simulating Reality in Lab Tests
 
-```js
-const start = performance.now();
-// ... some operation
-const end = performance.now();
-console.log(`Took ${end - start}ms`);
-```
+When collecting lab data:
 
-#### 🔸 Difference: `Date.now()` vs `performance.now()`
+- Simulate mobile vs. desktop use.
+- Consider network conditions.
+- Think about device power (not everyone has a fast setup).
 
-| Metric     | `Date.now()`        | `performance.now()`         |
-| ---------- | ------------------- | --------------------------- |
-| Based on   | Unix Epoch (1970)   | `performance.timeOrigin`    |
-| Resolution | Milliseconds        | Fractional milliseconds     |
-| Use case   | Logging, timestamps | Precise performance metrics |
-
-![](https://i.imgur.com/7awHDos.png)
-
-### 🔹 performance.timeOrigin
-
-Represents the timestamp (similar to Date.now()) at which the `navigation or worker started`.
-
-```js
-const timestamp = performance.timeOrigin + performance.now();
-```
-
-This combination gives you a high-precision timestamp equivalent to Date.now().
+> 🧠 Lab data must mimic real users to be meaningful.
 
 ---
 
-### 🔹 performance.getEntries()
+### 🤖 4.1.2 - Synthetic Data
 
-`Returns a list of all recorded performance entries`, including:
+- `Tests are run on remote devices/robots simulating user visits`.
+- Crosses real networks, so it's more realistic than lab tests.
+- `Still uses high-end devices and fast connections`, which skews results.
 
-- Navigation
-- Resource fetches (CSS, JS, images)
-- Custom marks and measures
-
-```js
-const entries = performance.getEntries();
-entries.forEach((entry) => console.log(entry.name, entry.startTime));
-```
-
-> This is `essentially what you see in the Network tab in DevTools`.
+> 🌐 Useful for monitoring in production-like environments, but not as accurate as real-world usage.
 
 ---
 
-### 🔹 performance.mark(name)
+### 👥 4.1.3 - Field Data (Real User Monitoring - RUM)
 
-`Creates a named timestamp (a "mark")` in the browser's performance timeline.
+- `Metrics are collected from real users visiting the site`.
+- Most accurate reflection of actual user experience.
+- Captures a wide range of devices, networks, and conditions.
 
-```js
-performance.mark("start-heavy-task");
-// ... run heavy operation
-performance.mark("end-heavy-task");
-```
+> ✅ Essential for understanding how real people experience your site.
 
 ---
 
-### 🔹 performance.measure(name, startMark, endMark)
+### 🧠 Key Differences
 
-Measures the duration between two marks.
+| Method     | Source                   | Accuracy | Sample Size     |
+| ---------- | ------------------------ | -------- | --------------- |
+| Lab Data   | Controlled test device   | Low      | Single sample   |
+| Synthetic  | Remote scripted bots     | Medium   | Limited samples |
+| Field Data | Real users in production | High     | Large dataset   |
 
-```js
-performance.measure("task-duration", "start-heavy-task", "end-heavy-task");
-```
-
-You can then access it via `getEntriesByType('measure')`.
-
----
-
-Absolutely! Here's a clearer and more structured version of your notes, following your same tone and format style:
+> 📊 Lab data gives you one controlled result. Field data gives you thousands of real-world scores.
 
 ---
 
-## 3.2 - PerformanceObserver API
+## 4.2 - Understanding Metrics and Percentiles
 
-The PerformanceObserver `lets us passively collect performance metrics when the browser is idle`, without blocking or interfering with the main thread.
-
-This is especially `useful when logging performance during runtime—so you don’t slow things down by measuring them`.
-
-> 🧠 Ideal for tracking metrics like Core Web Vitals, long tasks, layout shifts, etc.
-
-### Example: Observing Layout Shifts (CLS)
-
-```js
-const performanceObserver = new PerformanceObserver((list) => {
-  list.getEntries().forEach((entry) => {
-    console.log(`Layout shifted by ${entry.value}`);
-  });
-});
-
-performanceObserver.observe({
-  type: "layout-shift",
-  buffered: true,
-});
-
-// type: "layout-shift" → we're observing shifts that impact Cumulative Layout Shift (CLS).
-
-// buffered: true → ensures we also catch entries that happened before the observer was initialized.
-
-// buffered: false (default): only observes new entries from this point forward.
-```
-
-### Other Observable Entry Types:
-
-- "layout-shift" (CLS)
-- "largest-contentful-paint" (LCP)
-- "first-input" or "event" (INP)
-- "resource" (images, scripts, CSS, etc.)
-- "navigation" (full page loads)
-
-### 🔍 Filtering by entry.entryType
-
-Each PerformanceEntry has a entryType (like "resource", "layout-shift", etc). If you're observing multiple types or using getEntries(), you can filter like this:
-
-```js
-list.getEntries().forEach((entry) => {
-  if (entry.entryType === "layout-shift") {
-    console.log(`CLS shift: ${entry.value}`);
-  }
-});
-```
-
-Helpful when multiple entry types are observed and you want fine-grained control over handling them.
-
-### 🧹 Managing Observers & Filtering
-
-```js
-performanceObserver.disconnect();
-// ✅ Prevents memory leaks and keeps your app efficient — especially important in SPAs or long-lived sessions.
-```
-
-After you're done observing, always call disconnect() to stop the observer and free up memory.
-
-Use it when:
-
-- You're done collecting metrics
-- The page/component unmounts
-- You only need a one-time measurement
-
-### Easy Core Web Vitals Tracking
-
-You can also track Core Web Vitals with the [web-vitals](https://www.npmjs.com/package/web-vitals) library:
-
-```js
-import { onLCP, onCLS, onINP } from "web-vitals";
-
-onLCP(console.log);
-onCLS(console.log);
-onINP(console.log);
-```
-
-This wraps PerformanceObserver under the hood and gives you simple callbacks for each metric.
+To interpret performance data meaningfully, we must go beyond averages and dive into percentiles.
 
 ---
 
-## 3.3 - Browser Support
+### 📉 Why Averages Can Be Misleading
 
-![](https://i.imgur.com/sLyUUWc.png)
+Averages tend to oversimplify. For example:
 
-![](https://i.imgur.com/BUmqbIp.png)
+- If scores are: 99, 90, 70, 60 → the average = 80
+- But:
+  - Half of the users had a great experience.
+  - Half had a poor one.
+  - No one actually had an “80” experience.
 
-> 🧨 Safari still lacks full support for many Web Vitals APIs, which limits cross-browser consistency.
+This hides real user experiences.
+
+Another case:
+
+- Most users scored ~85–90.
+- But 10% had _terrible_ experiences.
+- Still, the average might remain 80.
+
+> 🚫 Conclusion: Averages hide outliers and fail to represent majority or worst-case user experiences.
 
 ---
+
+### 📊 Percentiles: A Better Approach
+
+Instead of asking “what’s the average?”, ask:
+
+> What do most users experience?  
+> What do the _worst_ users experience?
+
+#### 🔢 Definitions:
+
+- p50 (50th percentile): The median score. Half of users scored below, half above.
+- p75 (75th percentile): 75% of users had a better or equal score.
+- p95 / p99: Represent the worst 5% or 1% of user experiences.
+- Not using p100: it often includes garbage outliers (e.g., "3-year load times").
+
+![](https://i.imgur.com/M2CD79B.png)
+
+> ✅ Google’s Core Web Vitals use p75 for performance scoring.
+
+---
+
+### 📌 Example Distribution
+
+**Even distribution:**
+
+- Scores: 0, 10, 20, ..., 100  
+- p50 = 50, p75 = 75, p95 = 95  
+- Average = 50  
+
+**Real-world skewed distribution:**
+
+- Most users: 79–85 ms  
+- Few users: 256 ms (garbage outlier)  
+- p50 and p75 remain consistent  
+- But the average shifts upward due to the outlier
+
+> 🎯 Percentiles are stable even when averages get distorted by a few extreme cases.
+
+---
+
