@@ -111,18 +111,101 @@ Instead of asking “what’s the average?”, ask:
 
 **Even distribution:**
 
-- Scores: 0, 10, 20, ..., 100  
-- p50 = 50, p75 = 75, p95 = 95  
-- Average = 50  
+- Scores: 0, 10, 20, ..., 100
+- p50 = 50, p75 = 75, p95 = 95
+- Average = 50
 
 **Real-world skewed distribution:**
 
-- Most users: 79–85 ms  
-- Few users: 256 ms (garbage outlier)  
-- p50 and p75 remain consistent  
+- Most users: 79–85 ms
+- Few users: 256 ms (garbage outlier)
+- p50 and p75 remain consistent
 - But the average shifts upward due to the outlier
 
 > 🎯 Percentiles are stable even when averages get distorted by a few extreme cases.
 
 ---
 
+## 4.3 - Google Lighthouse & Performance Panel Deep Dive
+
+### 📊 Lighthouse Overview
+
+- Built into Chrome DevTools as a top tab.
+- Generates a familiar Performance Score (green/orange/red).
+- Evaluates:
+  - Performance ✅ _(focus of this course)_
+  - SEO
+  - Accessibility
+
+> The Web Vitals extension is no longer available. Google now recommends the DevTools tab Performance.
+
+---
+
+### ⚙️ Testing Setup Tips
+
+To simulate a real-user experience:
+
+- Pop out DevTools to avoid shrinking the viewport.
+- Use Responsive Mode and select a real or custom device (e.g., _iPhone 12 Pro_).
+- Example:
+  - Network Throttling (e.g., Slow 4G)
+  - CPU Throttling to mimic mid-to-low tier hardware.
+
+![](https://i.imgur.com/7g8Dd5X.png)  
+![](https://i.imgur.com/vfm3PQs.png)
+
+---
+
+### 🚦 Running a Lighthouse Audit
+
+- Select Mobile, apply throttling manually for better realism.
+- Metrics Lighthouse evaluates:
+  - FCP (First Contentful Paint)
+  - LCP (Largest Contentful Paint)
+  - CLS (Cumulative Layout Shift)
+  - ⚠️ INP (Interaction to Next Paint) not included unless actual interaction happens.
+
+---
+
+### 🎬 Extra Insights From Lighthouse
+
+- Filmstrip: Shows visual progression of page load.
+- Diagnostics: Highlights render-blocking resources, oversized images, and other bottlenecks.
+- Trace view: Links into the Performance tab for deeper analysis.
+
+---
+
+### 🔍 Performance Tab: Waterfall & Flame Chart
+
+Lighthouse gives a 10,000-foot view, but the Performance Panel is `where devs dig into details`.
+
+### Waterfall Chart
+
+- `Visualizes network requests` over time.
+- You can zoom into specific ranges to inspect:
+  - Blocked requests
+  - Long connection/setup times
+  - Render-blocking resources (e.g., CSS)
+- Example: Image blocked for 3.3s before download began.
+- Highlights high-priority files like fonts or CSS that delay first paint.
+
+### 🔥 Flame Chart
+
+- `Shows CPU tasks during load` (parsing, rendering, executing JS).
+- `Very low-level`: requires zooming way in (e.g., 100ms window).
+- Helps identify long-running tasks or JS that delays paint.
+- Navigable with keyboard (WASD keys) like a game.
+
+---
+
+### 🧠 Developer Pro Tip
+
+- If you're seeing performance issues, use Lighthouse to guide you.
+- But to diagnose real problems, jump into the Performance panel.
+- `Most performance issues are not JS memory leaks` — they're often about:
+  - HTML structure
+  - Image sizes
+  - Critical resource order
+  - Network bottlenecks
+
+---
