@@ -209,3 +209,106 @@ Lighthouse gives a 10,000-foot view, but the Performance Panel is `where devs di
   - Network bottlenecks
 
 ---
+
+## 4.4 - Chrome User Experience Report (CrUX)
+
+### 🌍 Real-World, Field-Based Data
+
+The Chrome User Experience Report (CrUX) is `Google’s dataset of real user performance data`, collected from people browsing the web using Chrome while signed into their Google account.
+
+#### 📊 Key Characteristics
+
+- Field Data: Unlike synthetic tests like Lighthouse, CrUX `captures real performance data from actual users`.
+- Logged-in Chrome Users Only: Data is `collected from users signed into Chrome with a Google account`. This is consented to via Google’s terms of service.
+- Top 1M+ Public Websites: CrUX data is only collected for popular, public domains—`no intranet or localhost data is included`.
+- Anonymous & Public: Google anonymizes and obfuscates the data before publishing it (e.g., rounding, fuzzing).
+- 28-Day Rolling Average: Data is updated daily, but each day's value reflects the last 28 days' performance.
+- Available via:
+  - Google BigQuery
+  - CrUX API
+  - PageSpeed Insights
+  - Google Search Console
+  - 3rd-party tools (e.g., Speed Check by Request Metrics)
+
+#### 💡 Why CrUX Matters
+
+- It’s the actual data Google uses to `determine if your site deserves performance-based ranking boosts or penalties`.
+- It reflects real device performance under real network conditions.
+- You `can check your competitors’ scores`, not just your own—useful for benchmarking.
+
+---
+
+### 🧪 CrUX vs. Lighthouse
+
+| Feature          | Chrome User Experience Report (CrUX) | Google Lighthouse            |
+| ---------------- | ------------------------------------ | ---------------------------- |
+| Data Type        | Field (Real users)                   | Synthetic (Simulated test)   |
+| Scope            | Public websites only                 | Any site (even localhost)    |
+| Device & Network | Real devices, real networks          | Simulated environment        |
+| User Interaction | Includes INP                         | No real interaction captured |
+| Frequency        | 28-day rolling average               | Instant, on-demand           |
+| Public?          | Yes                                  | Only local unless shared     |
+
+---
+
+### 🔍 Using CrUX
+
+#### ✅ Tools to Access CrUX
+
+- [PageSpeed Insights](https://pagespeed.web.dev)
+  - Shows both CrUX and synthetic Lighthouse data.
+  - CrUX is shown at the top — _real user experience data matters more_.
+- Google Search Console
+  - Provides CrUX-based Core Web Vitals reports for your own verified properties.
+- BigQuery Dataset
+  - Publicly accessible if you’re familiar with SQL and Google Cloud (⚠️ querying large datasets may incur cost).
+- Speed Check by Request Metrics
+  - Simple tool built by Todd Gardner (instructor of the course) for quick CrUX checks on any domain.
+  - Allows benchmarking against competitors
+
+---
+
+Here’s a new section you can add right after **4.4 - Chrome user experience report**, continuing the testing tools theme:
+
+---
+
+## 4.5 - WebPageTest.org
+
+[WebPageTest.org](https://webpagetest.org) is a powerful synthetic performance testing tool maintained by Catchpoint. Unlike PageSpeed Insights or Lighthouse, which are often used for quick audits, WebPageTest `provides a much more detailed and configurable testing environment` for advanced diagnostics.
+
+### Key Features
+
+- Custom Test Configuration  
+  `Choose location, device, browser, connection type (e.g., 3G, 4G, Cable), and more to simulate real-world conditions`.
+- Filmstrip View  
+  `Visualizes your page load frame by frame` to analyze paint timing and visual completeness.
+
+- Waterfall Charts  
+  Detailed request-by-request breakdown of everything that loads on the page, with blocking, DNS, SSL, and other network phases clearly marked.
+
+- Core Web Vitals Support  
+  Recently added support for INP in addition to LCP, CLS, and other metrics.
+
+- Scripting and Custom Steps  
+  Automate interactions like login flows, clicking buttons, and waiting for elements—ideal for measuring INP or multi-step apps.
+
+- Repeat View & Cache Testing  
+  Run tests with an empty or primed cache to observe differences in load behavior.
+
+- Web Vitals Breakdown by Element  
+  Pinpoint the exact image, script, or style responsible for a poor LCP or CLS.
+
+### Use Cases
+
+- Testing third-party impact (ads, tag managers)
+- Pinpointing critical rendering path bottlenecks
+- Verifying optimizations before release
+- Benchmarking competitor performance under identical conditions
+
+### Pro Tips
+
+- Use Lighthouse tab inside WebPageTest for even more insight (combines synthetic and Lighthouse audit).
+- Enable video recording and layout shift visualization to track janky user experiences.
+- Export data as JSON or HAR for offline analysis or integration into performance monitoring systems.
+
+---
