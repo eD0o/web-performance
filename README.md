@@ -236,6 +236,20 @@ The Chrome User Experience Report (CrUX) is `Google’s dataset of real user per
 - It reflects real device performance under real network conditions.
 - You `can check your competitors’ scores`, not just your own—useful for benchmarking.
 
+### CrUX vs Real User Monitoring (RUM)
+
+| Feature              | CrUX                                     | Real User Monitoring (RUM)                       |
+| -------------------- | ---------------------------------------- | ------------------------------------------------ |
+| **Data Type**        | Field Data                               | Field Data                                       |
+| **User Base**        | Logged-in Chrome users                   | All users on your site                           |
+| **Site Coverage**    | Top 1M+ public websites                  | Any site (including private/internal)            |
+| **Data Visibility**  | Public and anonymous                     | Private and detailed                             |
+| **Granularity**      | Aggregated, anonymized                   | High resolution (page, session, device, etc.)    |
+| **Frequency**        | 28-day rolling average                   | Real-time or near real-time                      |
+| **Customization**    | None                                     | Fully customizable (metrics, dimensions, alerts) |
+| **Storage & Access** | Google BigQuery, PageSpeed Insights, API | Your own dashboard, backend, or monitoring tools |
+| **Ideal For**        | SEO benchmarking and industry comparison | In-depth analysis and user-centric diagnostics   |
+
 ---
 
 ### 🧪 CrUX vs. Lighthouse
@@ -265,10 +279,6 @@ The Chrome User Experience Report (CrUX) is `Google’s dataset of real user per
 - Speed Check by Request Metrics
   - Simple tool built by Todd Gardner (instructor of the course) for quick CrUX checks on any domain.
   - Allows benchmarking against competitors
-
----
-
-Here’s a new section you can add right after **4.4 - Chrome user experience report**, continuing the testing tools theme:
 
 ---
 
