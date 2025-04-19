@@ -118,3 +118,19 @@ To build a performant site, you must first `understand who your users are, what 
 - Use your analytics: `Tools like real-user monitoring (RUM) and analytics platforms can reveal the actual devices, OSs, browsers, and network conditions your audience uses`. This data should guide your performance priorities and testing environments.
 
 ---
+
+## 5.4 - Improving Performance
+
+- Set realistic goals: `Use data to define performance targets that align with your users, industry, and competitors`.
+- Prioritize wisely:
+  - `Start with the worst-performing metric` based on real user monitoring (RUM) or CrUX data.
+  - `Tackle the easiest fixes first`.
+  - `Avoid chasing perfection—“fast` enough” is sometimes good enough.
+- `Don't rely solely on synthetic tools` like Lighthouse—real user data reflects actual experience.
+- Optimize by reducing work between interaction and measurement:
+  - Fewer network requests.
+  - Smaller payloads (e.g., images, JS).
+  - Caching and CDNs—_if your data shows it's needed_.
+- Performance ≠ perfection: `You don't need to implement every best practice—just those that move the needle for your users`.
+
+---
