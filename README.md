@@ -62,3 +62,59 @@ TurboTax intentionally slows down the "Submit" step with animations to give user
 - Remember: perception = experience.
 
 ---
+
+## 5.2 - Determining Performance Goals
+
+`You don’t get to decide what’s “fast enough”—your users, competitors, and SEO do`. Performance goals must be set based on real-world impact and context.
+
+### 1. User Experience
+
+- Focus on business metrics, not just performance scores:
+  - Bounce rate, session time, conversion rate, cart abandonment, scroll depth, etc.
+- Find correlations between changes in Core Web Vitals (like LCP or CLS) and shifts in business metrics.
+
+> Remember: `correlation ≠ causation` (e.g., pirate population vs. global warming). Always test assumptions.
+
+### 2. Competitors
+
+- Benchmark against similar sites. You need to `be at least 20% faster for users to notice a difference`—this is based on Weber’s Law.
+
+![](https://i.imgur.com/TqywOvp.png)
+
+- Minor improvements (like 4% faster) won’t be perceived; large gaps (like 57%) will.
+
+### 3. SEO Impact
+
+- Google uses Core Web Vitals (LCP, CLS, INP) in rankings.
+- Even if your content is excellent, poor performance can hurt discoverability.
+- Hitting the Web Vitals thresholds is critical to stay competitive in search results.
+
+Bottom line: Don’t guess—use data, user feedback, and competitive benchmarks to determine how fast your site _needs_ to be.
+
+---
+
+## 5.3 - Understanding your Users
+
+Here’s the summarized section as requested:
+
+---
+
+## 5.3 - Understanding Your Users
+
+To build a performant site, you must first `understand who your users are, what devices they use, and under what conditions they browse`.
+
+### Key Takeaways:
+
+- Mobile dominates: As of August 2024, 62% of global web traffic is mobile, making `mobile performance a critical priority`.
+- Device diversity: Screen sizes vary drastically, from tiny Android screens (~360px wide) to small laptops (1366px) and beyond. `Developer screens often don't reflect real user environments`.
+- OS usage:
+  - On mobile: 71% Android, 27% iOS.
+  - On desktop: 71% Windows, with macOS and Linux making up smaller shares.
+- Hardware limitations: `The average Android phone globally costs ~$286, meaning most users operate low-powered devices with limited RAM and CPU`.
+- Network speed (worldwide averages):
+  - Mobile: 60 Mbps down / 11 Mbps up / 27ms latency.
+  - These vary greatly by region—some areas exceed 250 Mbps, others fall under 10 Mbps.
+- Developer bias: Developers often test on fast, modern devices and networks that don’t match the real-world constraints of actual users.
+- Use your analytics: `Tools like real-user monitoring (RUM) and analytics platforms can reveal the actual devices, OSs, browsers, and network conditions your audience uses`. This data should guide your performance priorities and testing environments.
+
+---
