@@ -136,3 +136,39 @@ module.exports = app;
 - Compression is an easy win — just a server setting in most stacks.
 - Helps improve not just TTFB but total page weight.
 - Brotli is ideal for large payloads, Gzip is solid for all-around use.
+
+---
+
+## 6.3 - Efficient Protocols
+
+Modern websites rely on fast, reliable data delivery. Over time, web protocols have evolved to reduce latency and improve performance. 
+
+![](https://i.imgur.com/f85DaVm.png)
+
+### HTTP/1.1
+
+- The traditional, "chatty" web protocol.
+- Each asset (HTML, CSS, JS, etc.) `requires a separate request and response`.
+- High overhead from repeatedly setting up and tearing down connections.
+
+### HTTP/2
+
+- `Uses a single TCP connection to stream multiple requests/responses`.
+- Reduces overhead by reusing the connection.
+- More efficient than HTTP/1.1, but `still uses TCP, which requires extra steps` like handshakes and acknowledgments (ACKs).
+
+### HTTP/3
+
+- Built on QUIC, a protocol that runs over UDP instead of TCP.
+- Handles secure setup (like TLS) more efficiently.
+- No need to wait for ACKs — `data is sent continuously, which makes it faster in most cases`.
+- `Offers significant performance gains over HTTP/2`, especially on complex or global websites.
+
+### Real-world Testing
+
+- Tests from servers in Los Angeles, Singapore, and Frankfurt showed:
+  - ~2x speed improvement moving from HTTP/1 → HTTP/2 → HTTP/3.
+  - Faster load times especially for more complex apps (like SPAs).
+  - Some outliers exist, but overall, performance improves with each protocol upgrade.
+
+![](https://i.imgur.com/lgfj765.png)
