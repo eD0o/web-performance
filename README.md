@@ -141,7 +141,7 @@ module.exports = app;
 
 ## 6.3 - Efficient Protocols
 
-Modern websites rely on fast, reliable data delivery. Over time, web protocols have evolved to reduce latency and improve performance. 
+Modern websites rely on fast, reliable data delivery. Over time, web protocols have evolved to reduce latency and improve performance.
 
 ![](https://i.imgur.com/f85DaVm.png)
 
@@ -172,3 +172,22 @@ Modern websites rely on fast, reliable data delivery. Over time, web protocols h
   - Some outliers exist, but overall, performance improves with each protocol upgrade.
 
 ![](https://i.imgur.com/lgfj765.png)
+
+### 6.3.1 - Real-World Challenges & Demos
+
+While HTTP/2 and HTTP/3 offer major performance improvements, they're not always easy to implement — especially in local development or corporate environments. Here are a few key challenges:
+
+- `Local setup is hard: Simulating a proper HTTP/3 environment requires HTTPS, valid TLS certificates, and often complex proxy configurations`. This makes it tricky to demo or develop locally.
+- HTTPS requirement: Both HTTP/2 and HTTP/3 require TLS, which means dealing with certificates — something that’s tedious to manage on local machines.
+- Firewall and UDP issues: HTTP/3 runs over UDP, which may require special firewall rules, especially in larger organizations.
+- Tooling support is limited: Some tools (like curl) don't fully support HTTP/3 yet. You may need custom builds like curl3 to test things properly.
+
+#### Alt-Svc Header Behavior
+
+When visiting the site:
+
+- The initial request typically uses HTTP/2.
+- The server responds with an Alt-Svc header saying “I also support HTTP/3”.
+- The browser upgrades future requests to HTTP/3 without user intervention.
+
+This upgrade allows for faster, parallel streaming of assets, even if the Time to First Byte (TTFB) isn't drastically reduced. What matters is that resources are streamed more efficiently, especially under high load or for Single Page Apps (SPAs).
