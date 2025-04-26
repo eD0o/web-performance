@@ -191,3 +191,71 @@ When visiting the site:
 - The browser upgrades future requests to HTTP/3 without user intervention.
 
 This upgrade allows for faster, parallel streaming of assets, even if the Time to First Byte (TTFB) isn't drastically reduced. What matters is that resources are streamed more efficiently, especially under high load or for Single Page Apps (SPAs).
+
+---
+
+# 6.4 - Host Capacity & Proximity
+
+> 💬 _"Right-size your host and bring it closer to users. TTFB is heavily impacted by server capacity and distance."_ — Todd Gardner
+
+## 6.4.1 - Right-sizing Your Host
+
+- Objective: `Ensure your hosting platform has sufficient capacity for your application's workload`.
+- Context: Even if metrics (CPU, memory, bandwidth) seem low, under-provisioning can delay server response.
+- Example:
+  - Todd's app runs on a small DigitalOcean box.
+  - Artificial server delay was set to 1000ms.
+  - A realistic server processing time would be 30–50ms.
+- Action: Reduce server-side processing delay to match real-world needs → significantly improve Time To First Byte (TTFB).
+- Result:
+  - Pre-optimization: >1s TTFB.
+  - Post-optimization: ~0.21s TTFB.
+  - Improved First Contentful Paint (FCP) and Largest Contentful Paint (LCP) too.
+
+## 6.4.2 - Network Distance Penalty
+
+After compressing assets, fewer bytes are transmitted over the network.
+Using an efficient protocol minimizes unnecessary communication, and ensuring the server has sufficient capacity prevents delays. `However, if the server is located far from the user, additional latency becomes unavoidable`.
+
+- Problem: `Hosting far from users adds unavoidable latency`.
+- Process:
+  - Server → Local regional network → Global Internet backbone → User’s regional network → Final delivery.
+- Example:
+  - From Minneapolis to Amsterdam: 117ms minimum latency (measured via [WonderNetwork](https://wondernetwork.com/)).
+  - This is a hard physical limit that cannot be optimized away without relocating the server closer to the user.
+
+## 6.4.3 - Solution: Use a CDN (Content Delivery Network)
+
+- How it works:
+  - First request → Hits CDN → Cache miss → Pulls from origin (full latency).
+  - `Subsequent requests → Served from nearest CDN edge (low latency)`.
+- Example:
+  - Initial page load (cache miss): 308ms.
+  - Subsequent load (cache hit): 63ms.
+- Benefits:
+  - Users avoid long cross-continental hops.
+  - Fast, local copies of content dramatically speed up user experience.
+- Tools:
+  - Todd used BunnyCDN (but any CDN like Cloudflare, Fastly, etc. can achieve similar results).
+
+## 6.4.4 - Final Results After Improvements
+
+- Setup:
+  - Server capacity properly sized.
+  - Assets compressed (gzip/Brotli).
+  - Efficient protocols (HTTP/2 or newer).
+  - CDN deployed for geographic proximity.
+- Performance Gains:
+  - TTFB: ~0.02s (amazing!).
+  - FCP and LCP moved into "green" ranges without even optimizing JavaScript or HTML yet.
+
+## 6.4.5 - Key Takeaways
+
+| Step                    | Impact                            |
+| :---------------------- | :-------------------------------- |
+| Compress responses      | Fewer bytes to transfer           |
+| Use efficient protocols | Reduce chattiness (e.g., HTTP/2)  |
+| Right-size your host    | Avoid server processing delays    |
+| Use a CDN               | Minimize distance-related latency |
+
+---
