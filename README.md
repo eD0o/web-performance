@@ -59,3 +59,67 @@ Originally, a site had:
 Fonts are still render-blocking, but the CSS chain is collapsed and faster.
 
 ---
+
+## 7.2 - Preloading Resources
+
+When loading a page, it's `important to start critical path resources as early as possible` to improve First Contentful Paint (FCP).
+
+![](https://i.imgur.com/aLmy9SP.png)
+
+A `common problem is with Google Fonts`:
+
+- You typically insert a link to a CSS file from Google.
+- That CSS then points to font files, which are only requested after the CSS is downloaded and parsed.
+- This delays when fonts and text appear on the page.
+
+### Current Optimization (by default):
+
+Google Fonts suggests using:
+
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+```
+
+✅ Preconnect: Starts DNS lookup, TCP handshake, and TLS negotiation early.  
+❌ `Does NOT fetch the actual font files early` — it just prepares the connection.
+
+### How to Further Optimize:
+
+✅ Use `<link rel="preload">` to fetch font files immediately.
+
+Example:
+
+```html
+<link
+  rel="preload"
+  as="font"
+  type="font/woff2"
+  crossorigin
+  href="/path-to-font-file.woff2"
+/>
+```
+
+This:
+
+- `Starts downloading fonts right away, even before CSS` arrives.
+- Can significantly speed up FCP.
+
+![](https://i.imgur.com/62ig6qV.png)
+
+### Important Notes:
+
+- CORS: Fonts and fetch requests need crossorigin attribute and proper CORS headers.
+- Risk: Directly preloading Google's auto-generated font URLs is risky — filenames might change and break your site.
+- Best practice:  
+  👉 `Host fonts locally and preload them from your own server`.  
+  👉 `Avoid relying on Google's CDN for critical fonts`.
+
+### Benefits:
+
+- Fonts start downloading immediately.
+- Flattens the dependency chain.
+- Reduces waiting time after CSS is loaded.
+- Local hosting often yields faster and more reliable font loading compared to Google's hosted versions.
+
+---
