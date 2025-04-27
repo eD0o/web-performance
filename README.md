@@ -123,3 +123,51 @@ This:
 - Local hosting often yields faster and more reliable font loading compared to Google's hosted versions.
 
 ---
+
+Of course! Here's a clean and organized summary in English of what Todd Gardner explained about **Lazy Loading Resources**:
+
+---
+
+## 7.3 - Lazy Loading Resources
+
+### Problem: JavaScript Blocking the Main Thread
+
+- When the `browser encounters a <script> tag, it immediately downloads` and then executes it.
+- Execution is blocking: it stops parsing HTML, rendering, and other browser tasks until the script is done.
+- In waterfall charts, `this can cause big gaps where nothing new is downloaded because the browser is stuck executing JavaScript`.
+- This hurts things like First Contentful Paint (FCP), making the page slower for users.
+
+![](https://i.imgur.com/FJB1mou.png)
+
+### Solution: Defer JavaScript Execution
+
+- Many scripts aren't needed for initial render (e.g., interactive features that come after page load).
+- To avoid blocking, you `can delay when the script executes using attributes like defer or async`.
+
+### `async` vs `defer`
+
+| Attribute | How it works                                                                                                                 | Problems                                                                                                 |
+| :-------- | :--------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
+| async     | Starts downloading whenever possible, and as soon as it finishes downloading, it immediately executes (blocking the thread). | Creates a race between CSS and JS. If JS downloads first, it can still block rendering.                  |
+| defer     | Starts downloading whenever possible, but only executes right before the DOMContentLoaded event fires.                       | No race condition. Execution is guaranteed to happen after parsing is complete, keeping the page smooth. |
+
+> Use defer in most cases — it avoids blocking and preserves script execution order.
+
+![](https://i.imgur.com/u3ZiK7i.png)
+
+### Bonus Tips
+
+- Execution Order: With `defer`, even if scripts download out of order, they execute in the order they appear in the HTML.
+- `type="module"` scripts are always deferred by default, no need to add `defer`.
+- Placement:
+  - It used to matter where you put `<script>` tags (head vs body), but now with `defer`, it doesn't matter much.
+  - Just leave scripts in the `<head>` with `defer` for cleaner organization.
+
+Example:
+
+```html
+<script src="scripts.js" defer></script>
+<script src="promo.js" defer></script>
+```
+
+---
