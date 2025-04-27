@@ -40,7 +40,7 @@ Lazy loading is about `removing non-critical resources from the critical renderi
       - hero-mobile
     - Remove any loading="lazy" from these images to ensure they download immediately.
 
-> Today, just adding loading="lazy" is enough — no library needed ✅.
+> Modern browsers handle loading="lazy" natively; no extra JavaScript library is required ✅.
 
 Browser behavior after lazy loading:
 
@@ -48,7 +48,7 @@ Browser behavior after lazy loading:
 
 - Critical images like hero-mobile and hero-desktop are prioritized.
 - Non-critical images wait until the browser has idle network time.
-- Lazy-loaded images might still be discovered early but won't start downloading immediately.
+- They are discovered in the DOM, but download is deferred until the browser decides it's a good time.
 
 - Above vs Below the Fold:
   - Below-the-fold images: Always lazy load.
@@ -65,5 +65,43 @@ Browser behavior after lazy loading:
 | Below-the-fold           | Definitely lazy load |
 
 > \*fold -> bottom edge of the visible part of the page before scrolling.
+
+---
+
+Here’s a clean summary of what Todd Gardner explained:
+
+---
+
+## 8.2 - Eager Loading
+
+If an image is important for LCP (like the hero image), we want the browser to start loading it earlier.  
+Two main strategies:
+
+| Strategy                                               | What it Does                                 | Browser Support            | Notes           |
+| ------------------------------------------------------ | -------------------------------------------- | -------------------------- | --------------- |
+| Preload (`<link rel="preload" as="image" href="...">`) | Tells the browser `early to fetch the image` | Works everywhere           | Most reliable   |
+| `fetchpriority="high"` (in `<img>`)                    | `Signals this is important` to the browser   | Chrome, Edge (not Firefox) | Good extra hint |
+
+> Important: `fetchpriority alone still waits` until parsing the image tag — `preload starts even earlier`.
+
+### Example Code:
+
+```html
+<head>
+  <link rel="preload" as="image" href="/path/to/hero.jpg" />
+</head>
+
+<body>
+  <img src="/path/to/hero.jpg" fetchpriority="high" alt="Hero Image" />
+</body>
+```
+
+### Key Points:
+
+- Preload allows the browser to start fetching the resource earlier, even before the HTML parser reaches the img element.
+- fetchpriority="high" makes sure the image stays top-priority during the loading queue.
+- `You can and should use both together for your LCP images`.
+- No need for crossorigin for same-origin images in this context.
+- fetchpriority is optional but recommended where supported (especially for SEO-critical pages).
 
 ---
