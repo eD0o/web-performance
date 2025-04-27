@@ -1,173 +1,69 @@
-# 7 - Improving First Contentful Paint
+# 8 - Improving Largest Contentful Paint (LCP)
 
-As mentioned before, for FCP it doesn't matter what the content is, it could be anything visible on the screen.
-There is an important relationship here: by `improving Time to First Byte (TTFB), First Contentful Paint (FCP) also improves`.
-Additionally, `by further optimizing FCP, Largest Contentful Paint (LCP) will also benefit`.
+Goal: Make the `largest visible content load as early and quickly as possible`.
 
-Here’s a direct, clean resume of the transcript you posted:
+Why we talked about TTFB and FCP first ?
 
----
+- TTFB (Time to First Byte) and FCP (First Contentful Paint) are building blocks.
+- `By improving TTFB and FCP, you automatically help LCP` because the critical resources (like images) can start loading sooner.
 
-## 7.1 - Removing Sequence Chains
-
-When loading a page, `dependencies like CSS and fonts can create sequence chains that delay First Contentful Paint` (FCP).  
-This happens when:
-
-- An HTML file loads
-- It references a CSS file
-- That CSS uses @import to load another CSS
-- That CSS references fonts, background images, etc.
-
-Because CSS and fonts are render-blocking, `the browser waits for all of them before rendering anything`.
-
-![](https://i.imgur.com/ZoHDxuy.png)
-
-The same issue can happen with JavaScript, especially when:
-
-- A script dynamically injects another script
-- A module import (import) creates a new network request at runtime
+| Part              | What it means                                                                                | Focus                                                    |
+| :---------------- | :------------------------------------------------------------------------------------------- | :------------------------------------------------------- |
+| Resource Delay    | Time waiting before starting to download the LCP resource                                    | Mostly fixed by improving TTFB and FCP                   |
+| Resource Duration | Time it takes to download the LCP resource                                                   | Main focus for optimization                              |
+| Render Delay      | Time after the resource is ready but the browser hasn't yet rendered it (due to JS blocking) | Rarely a problem unless your site has massive JavaScript |
 
 ---
 
-### How to Remove These Chains:
+## 8.1 - Lazy Loading
 
-✅ `Bundle your files at build time`, not at runtime.  
-✅ `Use a module bundler` like:
+Lazy loading is about `removing non-critical resources from the critical rendering path` to prioritize loading of the LCP element.
 
-- Webpack
-- Rollup
-- Vite
+- Context:  
+  After optimizing fonts and CSS, a lot of non-critical images were still being downloaded early, competing with the LCP image.
 
-> For CSS specifically, you can use [Lightning CSS](https://lightningcss.dev/) — a `lightweight bundler that resolves imports and outputs a single CSS file`.
+- Strategy:
 
----
+  - `Lazy load all images and iframes except the LCP candidate`.
+  - `Teach the browser that certain images are lower priority`.
+  - This reduces resource delay for the important LCP asset.
 
-### Example:
+- How to implement:
 
-Originally, a site had:
+  - Bulk `replace all <img> tags by adding loading="lazy"` attribute.
+    - Search across the entire project.
+    - Apply to HTML and dynamically rendered images in JavaScript.
+  - Exception:  
+    The `LCP image(s) must NOT be lazy loaded`.
+    - In this case:
+      - hero-desktop
+      - hero-mobile
+    - Remove any loading="lazy" from these images to ensure they download immediately.
 
-- style.css → imported base.css
-- base.css → imported colors.css, typography.css, etc.
-- Fonts requested only after parsing everything
+> Today, just adding loading="lazy" is enough — no library needed ✅.
 
-✅ After bundling:
+Browser behavior after lazy loading:
 
-- `All styles combined into one styles.bundle.css`
-- Browser loads it immediately without following import chains
-- FCP happens much sooner
+![](https://i.imgur.com/lOdnk40.png)
 
-Fonts are still render-blocking, but the CSS chain is collapsed and faster.
+- Critical images like hero-mobile and hero-desktop are prioritized.
+- Non-critical images wait until the browser has idle network time.
+- Lazy-loaded images might still be discovered early but won't start downloading immediately.
 
----
+- Above vs Below the Fold:
+  - Below-the-fold images: Always lazy load.
+  - Above-the-fold images:
+    - Lazy load if they are not essential for initial user experience.
+    - Keep non-lazy only the most important visual elements (like LCP).
 
-## 7.2 - Preloading Resources
+### Quick Visual
 
-When loading a page, it's `important to start critical path resources as early as possible` to improve First Contentful Paint (FCP).
+| Image Type               | Strategy             |
+| ------------------------ | -------------------- |
+| LCP candidate            | No `loading="lazy"`  |
+| Above-the-fold (non-LCP) | Possibly lazy load   |
+| Below-the-fold           | Definitely lazy load |
 
-![](https://i.imgur.com/aLmy9SP.png)
-
-A `common problem is with Google Fonts`:
-
-- You typically insert a link to a CSS file from Google.
-- That CSS then points to font files, which are only requested after the CSS is downloaded and parsed.
-- This delays when fonts and text appear on the page.
-
-### Current Optimization (by default):
-
-Google Fonts suggests using:
-
-```html
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-```
-
-✅ Preconnect: Starts DNS lookup, TCP handshake, and TLS negotiation early.  
-❌ `Does NOT fetch the actual font files early` — it just prepares the connection.
-
-### How to Further Optimize:
-
-✅ Use `<link rel="preload">` to fetch font files immediately.
-
-Example:
-
-```html
-<link
-  rel="preload"
-  as="font"
-  type="font/woff2"
-  crossorigin
-  href="/path-to-font-file.woff2"
-/>
-```
-
-This:
-
-- `Starts downloading fonts right away, even before CSS` arrives.
-- Can significantly speed up FCP.
-
-![](https://i.imgur.com/62ig6qV.png)
-
-### Important Notes:
-
-- CORS: Fonts and fetch requests need crossorigin attribute and proper CORS headers.
-- Risk: Directly preloading Google's auto-generated font URLs is risky — filenames might change and break your site.
-- Best practice:  
-  👉 `Host fonts locally and preload them from your own server`.  
-  👉 `Avoid relying on Google's CDN for critical fonts`.
-
-### Benefits:
-
-- Fonts start downloading immediately.
-- Flattens the dependency chain.
-- Reduces waiting time after CSS is loaded.
-- Local hosting often yields faster and more reliable font loading compared to Google's hosted versions.
-
----
-
-Of course! Here's a clean and organized summary in English of what Todd Gardner explained about **Lazy Loading Resources**:
-
----
-
-## 7.3 - Lazy Loading Resources
-
-### Problem: JavaScript Blocking the Main Thread
-
-- When the `browser encounters a <script> tag, it immediately downloads` and then executes it.
-- Execution is blocking: it stops parsing HTML, rendering, and other browser tasks until the script is done.
-- In waterfall charts, `this can cause big gaps where nothing new is downloaded because the browser is stuck executing JavaScript`.
-- This hurts things like First Contentful Paint (FCP), making the page slower for users.
-
-![](https://i.imgur.com/FJB1mou.png)
-
-### Solution: Defer JavaScript Execution
-
-- Many scripts aren't needed for initial render (e.g., interactive features that come after page load).
-- To avoid blocking, you `can delay when the script executes using attributes like defer or async`.
-
-### `async` vs `defer`
-
-| Attribute | How it works                                                                                                                 | Problems                                                                                                 |
-| :-------- | :--------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------- |
-| async     | Starts downloading whenever possible, and as soon as it finishes downloading, it immediately executes (blocking the thread). | Creates a race between CSS and JS. If JS downloads first, it can still block rendering.                  |
-| defer     | Starts downloading whenever possible, but only executes right before the DOMContentLoaded event fires.                       | No race condition. Execution is guaranteed to happen after parsing is complete, keeping the page smooth. |
-
-> Use defer in most cases — it avoids blocking and preserves script execution order.
-
-![](https://i.imgur.com/u3ZiK7i.png)
-
-### Bonus Tips
-
-- Execution Order: With `defer`, even if scripts download out of order, they execute in the order they appear in the HTML.
-- `type="module"` scripts are always deferred by default, no need to add `defer`.
-- Placement:
-  - It used to matter where you put `<script>` tags (head vs body), but now with `defer`, it doesn't matter much.
-  - Just leave scripts in the `<head>` with `defer` for cleaner organization.
-
-Example:
-
-```html
-<script src="scripts.js" defer></script>
-<script src="promo.js" defer></script>
-```
+> \*fold -> bottom edge of the visible part of the page before scrolling.
 
 ---
