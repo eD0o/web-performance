@@ -105,3 +105,224 @@ Two main strategies:
 - fetchpriority is optional but recommended where supported (especially for SEO-critical pages).
 
 ---
+
+## 8.3 - Image Formats
+
+Even if we load an image (like the LCP image) as early as possible, it might still take a long time to display. To improve this, `we must send fewer bytes — reduce the image size as much as possible`.
+
+HTTP compression (e.g., gzip, Brotli) works great for text, but not for images because images are already compressed formats.
+
+> Running an image through text compression saves very little, sometimes almost nothing.
+
+### Choosing the Right Image Format
+
+| Format | File Size |
+| :----- | :-------- |
+| JPG    | 13 KB     |
+| PNG    | 5.5 KB    |
+| WebP   | 2.7 KB    |
+| AVIF   | 2.6 KB    |
+
+- Visually, the images look identical, but `file sizes vary drastically`.
+- `AVIF and WebP are much smaller compared to JPG and PNG`.
+- `WebP is broadly supported`; AVIF can sometimes be much slower to decode on older devices, but has growing support.
+
+> Using true SVGs are a great idea, mainly for icons and tiny images.
+
+![](https://i.imgur.com/KfhFcrJ.png)
+
+### Format Recommendations
+
+- Photos: JPG used to be the best, but now WebP and AVIF perform better.
+- Illustrations (graphics, logos): PNG was common, but again, WebP and AVIF are better options now.
+- Between WebP and AVIF, the size difference is small — using either is a big win compared to older formats.
+
+### When You Can't Use WebP or AVIF
+
+- Sometimes you can't use modern formats (due to `browser support or system constraints`).
+- Tools like `TinyPNG (https://tinypng.com) can optimize existing PNGs and JPGs dramatically`.
+- Example: a PNG compressed from 57 KB down to 15 KB, with no visible quality loss.
+
+![](https://i.imgur.com/DrYjNQs.png)
+
+---
+
+## 8.4 - Responsive Images
+
+- `Not every device needs the largest version of an image`.
+- High-resolution displays (e.g., Retina screens) might need a 2800px wide image.
+- Mobile devices might only need 720px, 600px, or even 300px wide versions.
+- Serving appropriately sized images saves a lot of bytes and improves loading speed.
+
+Example:
+
+```html
+<picture class="illustration">
+  <!-- mobile -->
+  <source
+    media="(max-width: 720px)"
+    srcset="
+      /hero-mobile.png?width=360   360w,
+      /hero-mobile.png?width=720   720w,
+      /hero-mobile.png?width=1440 1440w
+    "
+  />
+  <!-- desktop -->
+  <source
+    media="(min-width: 721px)"
+    srcset="
+      /hero-desktop.png?width=720   720w,
+      /hero-desktop.png?width=1440 1440w,
+      /hero-desktop.png?width=2800 2800w
+    "
+  />
+  <!-- default -->
+  <img
+    src="/hero-desktop.png?width=2800"
+    alt="Developer Stickers Online"
+    fetchpriority="high"
+    height="1200"
+    width="2800"
+  />
+</picture>
+```
+
+- Each source:
+
+  - `Defines a condition with the media attribute` (e.g., screen width).
+  - `Provides alternative image options` using the srcset attribute.
+
+- The img at the end:
+  - Is mandatory.
+  - `Ensures an image is always displayed`.
+  - Acts as a fallback `if none of the source conditions` match.
+
+## 8.5 - Optimizing Images
+
+In the 00_setup folder, there are some tools that can help with image optimization:
+
+![](https://i.imgur.com/0bAjeKA.png)
+
+### 8.5.1 - Image Resizing (imagePngResizer.mjs)
+
+- Goal: `Create smaller versions of each image` to ship less data.
+- Process:
+  - Use a tool (Jimp) to create resized copies of all PNG images.
+  - Sizes generated: 360px, 720px, 1024px, 1400px, 2800px width.
+- Command:
+  ```bash
+  npm run image-png-resizer
+  ```
+- Outcome:  
+  For each original image, multiple resized versions are now available under public/assets/image/R/.
+
+#### Example:
+
+| Size     | File Size |
+| -------- | --------- |
+| Original | 1.5 MB    |
+| 720px    | 800 KB    |
+| 360px    | 250 KB    |
+
+### 8.5.2 - PNG Optimization (imagePngOptimize.mjs)
+
+- Goal: Further `reduce file size without visible quality loss`.
+- Tool: [imagemin](https://github.com/imagemin/imagemin)
+- Process:
+  - Optimize all resized PNGs and output into a min/ directory.
+- Command:
+  ```bash
+  npm run image-png-optimize
+  ```
+- Results:
+  - Example:
+    - Before optimization: 1.5 MB
+    - After optimization: 470 KB
+  - Visual Quality: No noticeable difference.
+
+### 8.5.3 - Convert PNGs to WebP (imagePngToWebP.mjs)
+
+- Goal: Create `even smaller versions by using WebP format`.
+- Tool: imagemin-webp
+- Process:
+  - Convert optimized PNGs (from min/) into WebP files.
+  - Output into a webP/ directory.
+- Command:
+  ```bash
+  npm run image-png-to-webp
+  ```
+- Results:
+  - Example:
+    - `After WebP conversion: 69 KB`
+      > Compared to original: from 1.5 MB → 69 KB
+  - Visual Quality: No visible difference.
+
+### 8.5.4 - Update Image References
+
+- Goal: `Make the site load WebP images instead of PNGs`.
+- Steps:
+  - Use regex search/replace in VS Code:
+    - Find: /assets/image/(.*)\.png
+    - Replace with: /assets/image/webP/$1.webp
+- Effect:  
+  All references in HTML and JS now point to lighter WebP versions.
+
+### 8.5.5 - Implement Responsive Images
+
+- Goal: `Load different image sizes depending on screen size` using the picture element.
+
+- Sample structure:
+
+  ```html
+  <picture class="illustration">
+    <source
+      srcset="
+        /assets/image/webP/hero-desktop-360.webp   360w,
+        /assets/image/webP/hero-desktop-720.webp   720w,
+        /assets/image/webP/hero-desktop-1400.webp 1400w
+      "
+      sizes="(max-width: 720px) 360px, (max-width: 1400px) 720px, 1400px"
+      type="image/webp"
+      fetchpriority="high"
+    />
+    <img
+      src="/assets/image/webP/hero-desktop-1400.webp"
+      alt="Hero Image"
+      width="1400"
+      height="auto"
+    />
+  </picture>
+  ```
+
+- Benefits:
+  - `Browser only downloads the size it needs`.
+  - High fetch priority improves LCP without over-fetching.
+
+### 8.5.6 - Remove Preloads for LCP Image
+
+- Why?  
+  Preloading both desktop and mobile hero images was `no longer effective in this case because the exact needed image is not known at preload time (depends on screen width)`.
+- Action:  
+  Remove link rel="preload" for hero images.
+- Alternative:  
+  Rely on fetchpriority="high" inside picture, nothing that it’s not yet supported by Firefox.
+
+### 8.5.7 - Final Results
+
+- Page Load Check:
+  - Site renders correctly with all images replaced by responsive WebPs.
+- Performance Improvement:
+  - LCP dropped dramatically to 454 milliseconds.
+  - Page load time much faster (initial metric reported: ~5 seconds).
+  - Huge bandwidth savings: from 1.5MB → ~70KB per key image.
+
+### 📋 Key Takeaways
+
+✅ Resize images at multiple resolutions.  
+✅ Optimize images (lossless compression).  
+✅ Convert to modern formats (WebP).  
+✅ Update code references to point to new assets.  
+✅ Use picture + srcset for responsive images.  
+✅ Remove ineffective preloads if necessary.
+
+---
