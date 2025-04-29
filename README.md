@@ -262,7 +262,7 @@ In the 00_setup folder, there are some tools that can help with image optimizati
 - Goal: `Make the site load WebP images instead of PNGs`.
 - Steps:
   - Use regex search/replace in VS Code:
-    - Find: /assets/image/(.*)\.png
+    - Find: /assets/image/(.\*)\.png
     - Replace with: /assets/image/webP/$1.webp
 - Effect:  
   All references in HTML and JS now point to lighter WebP versions.
@@ -326,3 +326,70 @@ In the 00_setup folder, there are some tools that can help with image optimizati
 ✅ Remove ineffective preloads if necessary.
 
 ---
+
+## 8.6 - Caching
+
+Caching is a `fundamental web performance technique that reduces redundant network requests`, speeds up load times for return visits, and lowers bandwidth usage.
+
+### 8.6.1 - Server-Side Caching (via CDN)
+
+- What it is: `Storing content on servers geographically closer to users to avoid hitting the origin server repeatedly`.
+- How it works: A `CDN caches static files` (e.g., hero-desktop.png) and serves them directly.
+- Result: Faster access due to reduced latency and lower server load.
+
+### 8.6.2 - Browser-Side Caching
+
+#### a. Validation-Based Caching
+
+- The server returns:
+  - ETag: A unique hash of the file.
+  - Last-Modified: Timestamp of last change.
+- On repeat requests, the browser sends:
+  - If-None-Match: with the ETag.
+  - If-Modified-Since: with the last modified date.
+- `If the file hasn’t changed, the server returns 304 Not Modified (no body) – resulting in smaller payloads` but still involving a request.
+
+#### b. Expiration-Based Caching
+
+- The server returns:
+  - Cache-Control: max-age=7200 (e.g., 2 hours).
+  - Expires: future-date (optional).
+- `The browser reuses the file without making any request until the expiration time is reached`.
+- Zero request overhead = maximum speed.
+
+> ⚠️ Be careful when caching files like scripts.js for long periods. If the content changes, browsers won’t fetch the new version unless the filename changes.
+
+### 8.6.3 - The Cache Invalidation Problem
+
+- Long-term caching can backfire if a file changes but retains the same name.
+- Best practice:
+  - `Use hashed filenames` (e.g., scripts.8f9a3b.js) to "bust" the cache.
+  - Most bundlers (Webpack, Vite, etc.) automate this.
+- `Ensures users always get the latest version without disabling aggressive caching`.
+
+### 8.6.4 - Enabling Caching Headers
+
+- In your app’s config (e.g., performance.config), you can enable caching headers:
+  - ✅ `Enable 304 caching headers`: returns ETag and Last-Modified for static assets.
+  - ✅ `Enable Cache-Control`: to set how long the browser should retain the file.
+
+Example: Behavior:
+
+- First request:
+
+  - Browser asks for hero-mobile-1400.png.
+  - Server returns the file along with:
+    - ETag
+    - Last-Modified
+    - Cache-Control: max-age=7200
+
+- Return visit:
+  - `If cache is valid, the browser may not even make a network request`.
+  - Chrome `may return the asset from memory cache (0ms load time, no request logged)`.
+  - If the request is made and the file hasn’t changed, the server returns:
+    - 304 Not Modified
+
+Important:
+
+- This significantly improves performance for return users.
+- First-time visitors will still have to load everything fresh, `but caching pays off on all subsequent visits`.
