@@ -113,3 +113,138 @@ To prevent layout shifts, the `page should reserve the space of dynamic content 
 | Animate transform/opacity    | ✅                                  | ✅                                        |
 
 ---
+
+Absolutely! Here's your revised notes with integrated corrections, clarity improvements, and the new JavaScript examples:
+
+---
+
+Your notes are already well-structured and technically solid! Here's a reviewed and slightly refined version for clarity, precision, and flow:
+
+---
+
+## 9.2 - Improving INP (Interaction to Next Paint)
+
+### Demonstration of INP Measurement
+
+INP (Interaction to Next Paint) reflects the worst interaction latency experienced by a user on a page.
+
+To demonstrate how INP works, it must be measured in a real user interaction scenario—for example, clicking the Add to Cart button.  
+`Unlike metrics like LCP or FCP, which are captured passively during page load, INP requires an actual interaction to be triggered`.
+
+> Even if 9 out of 10 interactions are fast, `a single slow interaction defines your INP`.  
+> That's why `reviewing all user interaction triggers on the page is essential`. It only takes one poorly optimized interaction (e.g., a slow dropdown, toggle, or button) to degrade the score.
+
+#### Example Measurement Flow
+
+1. Triggering Interaction: Simulate a user action like clicking "Add to Cart". `If no immediate feedback is shown, the user perceives lag`.
+2. Identifying Bottlenecks: With tools like Chrome DevTools, you may notice a delay between the user click and UI update.
+
+For example, if the click handler runs analytics, fetches data, or processes logic before updating the UI, this creates delays.  
+A 1200ms gap before any visual feedback is a strong sign of poor INP.
+
+### Key Concept: Yielding the Main Thread
+
+To optimize INP, the key idea is to yield control back to the browser, allowing it to `paint the UI before executing heavy JavaScript logic`.
+
+A common "bad" sequence when handling a click:
+
+- Capturing the event
+- Running validation or analytics
+- Performing a fetch or mutation
+- Then finally updating the UI
+
+> When these operations run synchronously, the browser is blocked from rendering visual feedback, causing interaction delays.
+
+---
+
+### Solution: Yielding to the Main Thread
+
+To improve responsiveness, we can break up the task so that rendering happens before heavy processing. Two reliable strategies:
+
+- requestAnimationFrame: `Allows the browser to schedule a paint before continuing`.
+- setTimeout: `Defers logic to the next macrotask`, letting the browser breathe.
+
+---
+
+### ✅ Code Refactor for Improved INP
+
+```js
+async function handleAddToCart(event) {
+  const productId = getProductId(event);
+
+  // Yield to main thread for UI update
+  requestAnimationFrame(() => {
+    updateButtonUI(); // Feedback like "Added"
+
+    // After painting, update analytics and perform other tasks
+    setTimeout(() => {
+      updateAnalytics(productId);
+      addToCart(productId);
+    }, 0);
+  });
+}
+```
+
+- Flame Chart: After refactoring, DevTools will show the interaction being split into smaller blocks. This frees up the main thread for quicker paint.
+- INP Measurement: The delay between interaction and visual feedback is reduced, improving the INP score.
+
+### 🧪 More Examples for Optimizing INP
+
+#### 🔁 Example 1: Prioritizing UI Feedback Before Logic
+
+```js
+button.addEventListener("click", () => {
+  // Immediate visual feedback
+  button.textContent = "Processing...";
+
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      doHeavyProcessing();
+      button.textContent = "Done!";
+    }, 0);
+  });
+});
+```
+
+#### 🔁 Example 2: Awaiting Paint Before Running Heavy Logic
+
+```js
+button.onclick = async () => {
+  showFeedback(); // e.g., spinner or text change
+
+  // Let browser render before continuing
+  await new Promise(requestAnimationFrame);
+
+  await doHeavyWork(); // Proceed with data fetch or business logic
+};
+```
+
+#### 🔁 Example 3: Using `queueMicrotask` for Lightweight Deferral
+
+```js
+button.addEventListener("click", () => {
+  updateButtonUI(); // Immediate user feedback
+
+  // Run light logic soon after current execution
+  queueMicrotask(() => {
+    runSynchronousLogic(); // E.g., simple validation
+  });
+});
+```
+
+#### 🔁 Example 4: Using `scheduler.postTask` (Experimental API)
+
+```js
+button.addEventListener("click", () => {
+  showVisualFeedback(); // e.g., loader icon
+
+  scheduler.postTask(
+    () => {
+      runHeavyTask(); // Runs in background without blocking UI
+    },
+    { priority: "background" }
+  );
+});
+```
+
+---
